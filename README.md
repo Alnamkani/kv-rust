@@ -217,8 +217,17 @@ cargo run
 ### Run Tests
 
 ```bash
+# Run all tests
 cargo test
+
+# Run tests with output
+cargo test -- --nocapture
+
+# Run specific test
+cargo test test_health
 ```
+
+See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing guide.
 
 ## Contributing
 
@@ -233,3 +242,36 @@ All contributions should follow the documented workflow:
 ## License
 
 MIT
+
+
+Phase 1: Health Endpoint (Current)
+- ✅ Test GET /health returns 200
+- ✅ Test GET /health returns "OK"
+- ✅ Test wrong HTTP method returns 405
+Phase 2: Service Layer
+- [ ] Test creating new store
+- [ ] Test setting a key-value pair
+- [ ] Test getting existing key
+- [ ] Test getting missing key
+- [ ] Test overwriting existing key
+- [ ] Test deleting existing key
+- [ ] Test deleting missing key
+- [ ] Test thread safety (Arc/Mutex)
+Phase 3: Read Operations
+- [ ] Test GET /keys/{key} with existing key returns 200
+- [ ] Test GET /keys/{key} with missing key returns 404
+- [ ] Test response JSON format
+- [ ] Test special characters in keys
+- [ ] Test empty string as key
+Phase 4: Write Operations
+- [ ] Test POST /keys creates new key
+- [ ] Test POST /keys returns 201
+- [ ] Test POST /keys with invalid JSON returns 400
+- [ ] Test DELETE /keys/{key} removes existing key
+- [ ] Test DELETE /keys/{key} returns 204 on success
+- [ ] Test DELETE /keys/{key} returns 404 for missing key
+Phase 5: Integration Tests
+- [ ] Test full CRUD workflow
+- [ ] Test concurrent requests
+- [ ] Test edge cases (very long keys/values)
+- [ ] Test error handling
