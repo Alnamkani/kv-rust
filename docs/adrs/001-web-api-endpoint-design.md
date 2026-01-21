@@ -34,13 +34,29 @@ GET    /health               - Health check endpoint
 
 ### Request/Response Formats
 
+#### Response Model Architecture
+
+We use a three-type model structure for clean separation of concerns:
+
+1. **KeyValue** - Contains just the key-value data
+2. **Metadata** - Contains timestamps and other metadata
+3. **KeyValueResponse** - Combines both with metadata nested under `metadata` key
+
+This design:
+- Keeps core data separate from metadata
+- Allows easy extension of metadata without touching KV structure
+- Follows common API patterns (metadata nesting)
+- Makes it clear what's data vs. what's system information
+
 #### Successful GET Response (200 OK)
 ```json
 {
   "key": "user:123",
   "value": "John Doe",
-  "created_at": "2026-01-21T10:30:00Z",
-  "updated_at": "2026-01-21T10:30:00Z"
+  "metadata": {
+    "created_at": "2026-01-21T10:30:00Z",
+    "updated_at": "2026-01-21T10:30:00Z"
+  }
 }
 ```
 
@@ -57,8 +73,10 @@ GET    /health               - Health check endpoint
 {
   "key": "user:123",
   "value": "John Doe",
-  "created_at": "2026-01-21T10:30:00Z",
-  "updated_at": "2026-01-21T10:30:00Z"
+  "metadata": {
+    "created_at": "2026-01-21T10:30:00Z",
+    "updated_at": "2026-01-21T10:30:00Z"
+  }
 }
 ```
 
@@ -74,8 +92,10 @@ GET    /health               - Health check endpoint
 {
   "key": "user:123",
   "value": "Jane Doe",
-  "created_at": "2026-01-21T10:30:00Z",
-  "updated_at": "2026-01-21T14:45:00Z"
+  "metadata": {
+    "created_at": "2026-01-21T10:30:00Z",
+    "updated_at": "2026-01-21T14:45:00Z"
+  }
 }
 ```
 
@@ -128,12 +148,14 @@ This distinction allows clients to:
 
 1. **RESTful Standards** - Follows HTTP/REST conventions, familiar to developers
 2. **Clear Semantics** - POST vs PUT distinction prevents accidental overwrites
-3. **Extensible** - Metadata fields (created_at, updated_at) allow future enhancements without breaking changes
-4. **Machine-Readable Errors** - Error codes enable proper client-side error handling
-5. **Type Safety** - JSON structure maps well to Rust structs with serde
-6. **Idempotency** - PUT operations can be safely retried
-7. **HTTP Standards** - Proper status codes provide semantic meaning
-8. **Future-Proof** - Can add batch endpoints (/keys/batch) or query params (/keys?prefix=user:) later
+3. **Extensible** - Three-type model (KeyValue, Metadata, Response) allows future enhancements without breaking changes
+4. **Separation of Concerns** - Core data (key/value) cleanly separated from system metadata
+5. **Machine-Readable Errors** - Error codes enable proper client-side error handling
+6. **Type Safety** - JSON structure maps well to Rust structs with serde
+7. **Idempotency** - PUT operations can be safely retried
+8. **HTTP Standards** - Proper status codes provide semantic meaning
+9. **Future-Proof** - Can add metadata fields (version, ttl, tags) without changing KV structure
+10. **Composability** - KeyValue and Metadata types can be reused independently
 
 ### Negative
 
@@ -254,16 +276,30 @@ Keep `/read/{key}` endpoint as-is, add write operations incrementally.
 
 Will need to create:
 ```rust
-// Request/Response models
-pub struct KeyValueResponse {
-    pub key: String,
+use crate::types::Key;
+
+// Core data types
+pub struct KeyValue {
+    pub key: Key,
     pub value: String,
+}
+
+// Metadata type
+pub struct Metadata {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
+// Union type for responses
+pub struct KeyValueResponse {
+    pub key: Key,
+    pub value: String,
+    pub metadata: Metadata,
+}
+
+// Request models
 pub struct CreateKeyRequest {
-    pub key: String,
+    pub key: Key,  // Uses existing Key type with built-in validation
     pub value: String,
 }
 
@@ -271,6 +307,7 @@ pub struct UpdateKeyRequest {
     pub value: String,
 }
 
+// Error models
 pub struct ErrorResponse {
     pub error: ErrorDetail,
 }
@@ -280,6 +317,11 @@ pub struct ErrorDetail {
     pub message: String,
 }
 ```
+
+**Note**: The existing `Key` type (`src/types/key.rs`) provides:
+- Validation (max 255 chars, alphanumeric + hyphens/underscores)
+- Serde serialization/deserialization with automatic validation
+- Type safety ensuring only valid keys in the system
 
 ### Storage Layer Changes
 

@@ -11,6 +11,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(app::health::health)
             .configure(app::read_ops::configure)
+            .configure(app::write_ops::configure)
     })
     .bind(("0.0.0.0", 8080))?
     .run()
