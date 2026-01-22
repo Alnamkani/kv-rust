@@ -5,10 +5,7 @@ use crate::types::Key;
 pub fn test_get_nonexistent_key<S: Storage>(storage: &S) {
     let key = Key::new("nonexistent".to_string()).unwrap();
     let result = storage.get(key);
-    assert!(
-        result.is_none(),
-        "Getting nonexistent key should return None"
-    );
+    assert!(result.is_err(), "Getting nonexistent key should return Err");
 }
 
 pub fn test_upsert_new_key<S: Storage>(storage: &S) {
@@ -63,7 +60,7 @@ pub fn test_get_existing_key<S: Storage>(storage: &S) {
     let key = Key::new("test-key".to_string()).unwrap();
     let result = storage.get(key);
 
-    assert!(result.is_some());
+    assert!(result.is_ok());
     let value_response = result.unwrap();
     assert_eq!(value_response.value, "test-value");
 }
@@ -78,42 +75,20 @@ pub fn test_delete_existing_key<S: Storage>(storage: &S) {
     let key = Key::new("test-key".to_string()).unwrap();
     let deleted = storage.delete(key.clone());
 
-    assert!(deleted.is_some());
+    assert!(deleted.is_ok());
     let deleted_value = deleted.unwrap();
     assert_eq!(deleted_value.value, "test-value");
 
     let get_result = storage.get(key);
-    assert!(get_result.is_none(), "Key should not exist after deletion");
+    assert!(get_result.is_err(), "Key should not exist after deletion");
 }
 
 pub fn test_delete_nonexistent_key<S: Storage>(storage: &S) {
     let key = Key::new("nonexistent".to_string()).unwrap();
     let result = storage.delete(key);
     assert!(
-        result.is_none(),
-        "Deleting nonexistent key should return None"
-    );
-}
-
-pub fn test_contains_key_exists<S: Storage>(storage: &S) {
-    let request = CreateKVRequest {
-        key: Key::new("test-key".to_string()).unwrap(),
-        value: "test-value".to_string(),
-    };
-    storage.upsert(request);
-
-    let key = Key::new("test-key".to_string()).unwrap();
-    assert!(
-        storage.contains_key(key),
-        "contains_key should return true for existing key"
-    );
-}
-
-pub fn test_contains_key_not_exists<S: Storage>(storage: &S) {
-    let key = Key::new("nonexistent".to_string()).unwrap();
-    assert!(
-        !storage.contains_key(key),
-        "contains_key should return false for nonexistent key"
+        result.is_err(),
+        "Deleting nonexistent key should return Err"
     );
 }
 

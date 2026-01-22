@@ -17,6 +17,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(storage_data.clone())
+            .app_data(
+                web::JsonConfig::default().error_handler(app::error_handler::json_error_handler),
+            )
             .service(app::health::health)
             .configure(app::read_ops::configure)
             .configure(app::write_ops::configure)

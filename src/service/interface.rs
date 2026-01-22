@@ -1,10 +1,11 @@
 use crate::app::models::{CreateKVRequest, KeyValueResponse, ValueResponse};
+use crate::service::StorageError;
 use crate::types::Key;
 
 pub trait Storage {
-    fn get(&self, key: Key) -> Option<ValueResponse>;
+    fn get(&self, key: Key) -> Result<ValueResponse, StorageError>;
+    fn insert(&self, body: CreateKVRequest) -> Result<KeyValueResponse, StorageError>;
     fn upsert(&self, body: CreateKVRequest) -> KeyValueResponse;
-    fn delete(&self, key: Key) -> Option<ValueResponse>;
-    fn contains_key(&self, key: Key) -> bool;
+    fn delete(&self, key: Key) -> Result<ValueResponse, StorageError>;
     fn list_keys(&self) -> Vec<Key>;
 }
