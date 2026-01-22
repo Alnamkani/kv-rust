@@ -1,20 +1,19 @@
-use crate::app::models::{Metadata, ValueResponse};
+use crate::service::Storage;
 use crate::types::Key;
 use actix_web::{HttpResponse, Responder, get, web};
-use chrono::Utc;
+use std::sync::Arc;
 
 #[get("/keys/{key}")]
-pub async fn get_value_by_key(key: web::Path<Key>) -> impl Responder {
-    let now = Utc::now();
-    let response = ValueResponse {
-        value: key.into_inner().into_string(),
-        metadata: Metadata {
-            created_at: now,
-            updated_at: now,
-        },
-    };
+pub async fn get_value_by_key(
+    key: web::Path<Key>,
+    storage: web::Data<Arc<dyn Storage + Send + Sync>>,
+) -> impl Responder {
+    let key = key.into_inner();
 
-    HttpResponse::Ok().json(response)
+    match storage.get(key) {
+        Some(value_response) => HttpResponse::Ok().json(value_response),
+        None => HttpResponse::NotFound().finish(),
+    }
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
