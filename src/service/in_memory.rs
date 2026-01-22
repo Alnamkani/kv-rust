@@ -1,10 +1,16 @@
 use crate::app::models::{CreateKVRequest, KeyValueResponse, Metadata, ValueResponse};
-use crate::service::Storage;
+use crate::service::{Storage, StorageError};
 use crate::types::Key;
 use chrono::Utc;
 
 pub struct InMemoryStorage {
     map: dashmap::DashMap<Key, ValueResponse>,
+}
+
+impl Default for InMemoryStorage {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl InMemoryStorage {
@@ -16,8 +22,34 @@ impl InMemoryStorage {
 }
 
 impl Storage for InMemoryStorage {
-    fn get(&self, key: Key) -> Option<ValueResponse> {
-        self.map.get(&key).map(|entry| entry.value().clone())
+    fn get(&self, key: Key) -> Result<ValueResponse, StorageError> {
+        self.map
+            .get(&key)
+            .map(|entry| entry.value().clone())
+            .ok_or(StorageError::KeyNotFound(key))
+    }
+
+    fn insert(&self, body: CreateKVRequest) -> Result<KeyValueResponse, StorageError> {
+        if self.map.contains_key(&body.key) {
+            return Err(StorageError::KeyAlreadyExists(body.key));
+        }
+
+        let now = Utc::now();
+        let value_response = ValueResponse {
+            value: body.value.clone(),
+            metadata: Metadata {
+                created_at: now,
+                updated_at: now,
+            },
+        };
+
+        self.map.insert(body.key.clone(), value_response.clone());
+
+        Ok(KeyValueResponse {
+            key: body.key,
+            value: body.value,
+            metadata: value_response.metadata,
+        })
     }
 
     fn upsert(&self, body: CreateKVRequest) -> KeyValueResponse {
@@ -45,12 +77,11 @@ impl Storage for InMemoryStorage {
         }
     }
 
-    fn delete(&self, key: Key) -> Option<ValueResponse> {
-        self.map.remove(&key).map(|(_, value)| value)
-    }
-
-    fn contains_key(&self, key: Key) -> bool {
-        self.map.contains_key(&key)
+    fn delete(&self, key: Key) -> Result<ValueResponse, StorageError> {
+        self.map
+            .remove(&key)
+            .map(|(_, value)| value)
+            .ok_or(StorageError::KeyNotFound(key))
     }
 
     fn list_keys(&self) -> Vec<Key> {
@@ -101,18 +132,6 @@ mod tests {
     fn test_in_memory_delete_nonexistent() {
         let storage = create_storage();
         test_delete_nonexistent_key(&storage);
-    }
-
-    #[test]
-    fn test_in_memory_contains_key_exists() {
-        let storage = create_storage();
-        test_contains_key_exists(&storage);
-    }
-
-    #[test]
-    fn test_in_memory_contains_key_not_exists() {
-        let storage = create_storage();
-        test_contains_key_not_exists(&storage);
     }
 
     #[test]

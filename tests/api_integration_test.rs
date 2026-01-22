@@ -32,6 +32,15 @@ async fn test_get_nonexistent_key_returns_404() {
 
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
+
+    let body: serde_json::Value = test::read_body_json(resp).await;
+    assert_eq!(body["error"]["code"], "KEY_NOT_FOUND");
+    assert!(
+        body["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("nonexistent")
+    );
 }
 
 #[actix_web::test]
@@ -74,6 +83,15 @@ async fn test_post_duplicate_key_returns_409() {
 
     let resp = test::call_service(&app, duplicate_req).await;
     assert_eq!(resp.status().as_u16(), 409);
+
+    let body: serde_json::Value = test::read_body_json(resp).await;
+    assert_eq!(body["error"]["code"], "KEY_ALREADY_EXISTS");
+    assert!(
+        body["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("duplicate-key")
+    );
 }
 
 #[actix_web::test]
@@ -165,6 +183,15 @@ async fn test_delete_nonexistent_key_returns_404() {
 
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status().as_u16(), 404);
+
+    let body: serde_json::Value = test::read_body_json(resp).await;
+    assert_eq!(body["error"]["code"], "KEY_NOT_FOUND");
+    assert!(
+        body["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("nonexistent")
+    );
 }
 
 #[actix_web::test]

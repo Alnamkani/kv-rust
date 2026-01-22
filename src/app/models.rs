@@ -37,13 +37,13 @@ pub struct ValueResponse {
     pub metadata: Metadata,
 }
 
-// #[derive(Debug, Serialize)]
-// pub struct ErrorDetail {
-//     pub code: String,
-//     pub message: String,
-// }
+#[derive(Debug, Serialize)]
+pub struct ErrorDetail {
+    pub code: String,
+    pub message: String,
+}
 
-// #[derive(Debug, Serialize)]
-// pub struct ErrorResponse {
-//     pub error: ErrorDetail,
-// }
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    pub error: ErrorDetail,
+}

@@ -1,7 +1,7 @@
-use crate::app::models::{CreateKVRequest, UpdateKVRequest};
+use crate::app::models::{CreateKVRequest, ErrorDetail, ErrorResponse, UpdateKVRequest};
 use crate::service::Storage;
 use crate::types::Key;
-use actix_web::{HttpResponse, Responder, delete, post, put, web, get};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 use std::sync::Arc;
 
 #[post("/keys")]
@@ -11,19 +11,22 @@ pub async fn create_kv(
 ) -> impl Responder {
     let request = body.into_inner();
 
-    if storage.contains_key(request.key.clone()) {
-        return HttpResponse::Conflict().finish();
+    match storage.insert(request) {
+        Ok(response) => HttpResponse::Created().json(response),
+        Err(storage_error) => {
+            let error = ErrorResponse {
+                error: ErrorDetail {
+                    code: storage_error.error_code().to_string(),
+                    message: storage_error.to_string(),
+                },
+            };
+            HttpResponse::Conflict().json(error)
+        }
     }
-
-    let response = storage.upsert(request);
-    HttpResponse::Created().json(response)
 }
 
-
 #[get("/keys")]
-pub async fn get_keys_list(
-    storage: web::Data<Arc<dyn Storage + Send + Sync>>,
-) -> impl Responder {
+pub async fn get_keys_list(storage: web::Data<Arc<dyn Storage + Send + Sync>>) -> impl Responder {
     HttpResponse::Ok().json(storage.list_keys())
 }
 
@@ -53,8 +56,16 @@ pub async fn delete_kv(
     let key = key.into_inner();
 
     match storage.delete(key) {
-        Some(value_response) => HttpResponse::Ok().json(value_response),
-        None => HttpResponse::NotFound().finish(),
+        Ok(value_response) => HttpResponse::Ok().json(value_response),
+        Err(storage_error) => {
+            let error = ErrorResponse {
+                error: ErrorDetail {
+                    code: storage_error.error_code().to_string(),
+                    message: storage_error.to_string(),
+                },
+            };
+            HttpResponse::NotFound().json(error)
+        }
     }
 }
 
