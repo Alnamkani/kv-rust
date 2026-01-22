@@ -30,7 +30,30 @@ use utoipa::OpenApi;
     info(
         title = "KV-Rust API",
         version = "0.1.0",
-        description = "A lightweight, high-performance key-value store REST API built with Rust and Actix-web. Provides simple CRUD operations for storing and retrieving string key-value pairs with metadata."
+        description = r#"A lightweight, high-performance key-value store REST API built with Rust and Actix-web.
+
+## Features
+- Simple CRUD operations for string key-value pairs
+- Automatic timestamp tracking (created_at, updated_at)
+- Thread-safe in-memory storage with DashMap
+- Comprehensive error handling with detailed error messages
+- Request validation for keys and values
+
+## Key Constraints
+- Alphanumeric characters, hyphens (-), and underscores (_) only
+- Length: 1-255 characters
+- No whitespace or special characters
+
+## Value Constraints
+- Non-empty string
+- No size limit (within reasonable memory constraints)
+
+## Common Use Cases
+- Session storage
+- Configuration management
+- Temporary data caching
+- Feature flags
+- User preferences"#
     )
 )]
 pub struct ApiDoc;

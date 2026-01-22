@@ -4,9 +4,11 @@ use actix_web::{HttpResponse, Responder, get};
     get,
     path = "/health",
     responses(
-        (status = 200, description = "Service is healthy", body = String)
+        (status = 200, description = "Service is healthy and ready to accept requests", body = String, example = json!("OK"))
     ),
-    tag = "Health"
+    tag = "Health",
+    summary = "Health check endpoint",
+    description = "Returns a simple OK response to indicate the service is running and healthy. Use this endpoint for monitoring, load balancer health checks, or to verify the service is accessible."
 )]
 #[get("/health")]
 pub async fn health() -> impl Responder {

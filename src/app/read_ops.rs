@@ -8,13 +8,15 @@ use std::sync::Arc;
     get,
     path = "/keys/{key}",
     params(
-        ("key" = String, Path, description = "Unique key identifier (alphanumeric, hyphens, underscores, 1-255 chars)")
+        ("key" = String, Path, description = "Unique key identifier (alphanumeric, hyphens, underscores, 1-255 chars)", example = "user-123")
     ),
     responses(
-        (status = 200, description = "Successfully retrieved value", body = ValueResponse),
-        (status = 404, description = "Key not found", body = ErrorResponse)
+        (status = 200, description = "Successfully retrieved value with metadata", body = ValueResponse),
+        (status = 404, description = "Key not found in the store", body = ErrorResponse)
     ),
-    tag = "Keys - Read Operations"
+    tag = "Keys - Read Operations",
+    summary = "Get value by key",
+    description = "Retrieves the value associated with the given key, along with metadata including creation and last update timestamps. Returns 404 if the key does not exist."
 )]
 #[get("/keys/{key}")]
 pub async fn get_value_by_key(

@@ -10,9 +10,12 @@ use std::sync::Arc;
     request_body = CreateKVRequest,
     responses(
         (status = 201, description = "Key-value pair created successfully", body = KeyValueResponse),
-        (status = 409, description = "Key already exists", body = ErrorResponse)
+        (status = 409, description = "Key already exists - use PUT to update", body = ErrorResponse),
+        (status = 400, description = "Invalid key format or empty value", body = ErrorResponse)
     ),
-    tag = "Keys - Write Operations"
+    tag = "Keys - Write Operations",
+    summary = "Create new key-value pair",
+    description = "Creates a new key-value pair in the store. The key must be unique and follow the naming constraints (alphanumeric, hyphens, underscores, 1-255 chars). Returns 409 if the key already exists. Use PUT to update existing keys."
 )]
 #[post("/keys")]
 pub async fn create_kv(
@@ -39,9 +42,11 @@ pub async fn create_kv(
     get,
     path = "/keys",
     responses(
-        (status = 200, description = "List of all keys", body = Vec<String>)
+        (status = 200, description = "List of all keys in the store", body = Vec<String>, example = json!(["user-123", "config-prod", "session-abc"]))
     ),
-    tag = "Keys - Read Operations"
+    tag = "Keys - Read Operations",
+    summary = "List all keys",
+    description = "Returns an array of all keys currently stored in the key-value store. Useful for discovering what data is available or for administrative purposes."
 )]
 #[get("/keys")]
 pub async fn get_keys_list(storage: web::Data<Arc<dyn Storage + Send + Sync>>) -> impl Responder {
@@ -52,13 +57,16 @@ pub async fn get_keys_list(storage: web::Data<Arc<dyn Storage + Send + Sync>>) -
     put,
     path = "/keys/{key}",
     params(
-        ("key" = String, Path, description = "Unique key identifier")
+        ("key" = String, Path, description = "Unique key identifier", example = "user-123")
     ),
     request_body = UpdateKVRequest,
     responses(
-        (status = 200, description = "Key-value pair updated or created", body = KeyValueResponse)
+        (status = 200, description = "Key-value pair updated or created (idempotent upsert operation)", body = KeyValueResponse),
+        (status = 400, description = "Invalid key format or empty value", body = ErrorResponse)
     ),
-    tag = "Keys - Write Operations"
+    tag = "Keys - Write Operations",
+    summary = "Update or create key-value pair",
+    description = "Updates an existing key-value pair or creates it if it doesn't exist (upsert operation). This is an idempotent operation. If updating, preserves the original created_at timestamp and updates the updated_at timestamp."
 )]
 #[put("/keys/{key}")]
 pub async fn update_kv(
@@ -82,13 +90,15 @@ pub async fn update_kv(
     delete,
     path = "/keys/{key}",
     params(
-        ("key" = String, Path, description = "Unique key identifier")
+        ("key" = String, Path, description = "Unique key identifier", example = "user-123")
     ),
     responses(
-        (status = 200, description = "Key-value pair deleted successfully", body = ValueResponse),
-        (status = 404, description = "Key not found", body = ErrorResponse)
+        (status = 200, description = "Key-value pair deleted successfully, returns the deleted value", body = ValueResponse),
+        (status = 404, description = "Key not found - nothing to delete", body = ErrorResponse)
     ),
-    tag = "Keys - Write Operations"
+    tag = "Keys - Write Operations",
+    summary = "Delete key-value pair",
+    description = "Removes a key-value pair from the store and returns the deleted value with its metadata. Returns 404 if the key does not exist."
 )]
 #[delete("/keys/{key}")]
 pub async fn delete_kv(
