@@ -1,9 +1,21 @@
-use crate::app::models::{ErrorDetail, ErrorResponse};
+use crate::app::models::{ErrorDetail, ErrorResponse, ValueResponse};
 use crate::service::Storage;
 use crate::types::Key;
 use actix_web::{HttpResponse, Responder, get, web};
 use std::sync::Arc;
 
+#[utoipa::path(
+    get,
+    path = "/keys/{key}",
+    params(
+        ("key" = String, Path, description = "Unique key identifier (alphanumeric, hyphens, underscores, 1-255 chars)")
+    ),
+    responses(
+        (status = 200, description = "Successfully retrieved value", body = ValueResponse),
+        (status = 404, description = "Key not found", body = ErrorResponse)
+    ),
+    tag = "Keys - Read Operations"
+)]
 #[get("/keys/{key}")]
 pub async fn get_value_by_key(
     key: web::Path<Key>,
