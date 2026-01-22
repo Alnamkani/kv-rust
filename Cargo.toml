@@ -17,6 +17,13 @@ chrono = { version = "0.4", features = ["serde"] }
 
 validator = { version = "0.18", features = ["derive"] }
 regex = "1"
+
+utoipa = { version = "5", features = ["actix_extras", "chrono"] }
+utoipa-swagger-ui = { version = "8", features = ["actix-web"] }
+utoipa-redoc = { version = "5", features = ["actix-web"] }
+utoipa-rapidoc = { version = "5", features = ["actix-web"] }
+utoipa-scalar = { version = "0.3", features = ["actix-web"] }
+
 [dev-dependencies]
 # For testing HTTP endpoints
 reqwest = { version = "0.12", features = ["json"] }
