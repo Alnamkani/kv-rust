@@ -229,6 +229,84 @@ cargo test test_health
 
 See [docs/TESTING.md](docs/TESTING.md) for comprehensive testing guide.
 
+## API Documentation
+
+This project includes comprehensive interactive API documentation using OpenAPI 3.0 specification. Multiple documentation UIs are available for different preferences:
+
+### Documentation UIs
+
+When the server is running (`cargo run`), access the API documentation at:
+
+- **Swagger UI** - Interactive testing interface with "Try it out" functionality
+  - [http://localhost:8080/swagger-ui](http://localhost:8080/swagger-ui)
+  
+- **Redoc** - Clean, read-focused documentation with excellent navigation
+  - [http://localhost:8080/redoc](http://localhost:8080/redoc)
+
+- **Scalar** - Modern, polished UI with great UX
+  - [http://localhost:8080/scalar](http://localhost:8080/scalar)
+
+- **RapiDoc** - Minimal, fast interface
+  - [http://localhost:8080/rapidoc](http://localhost:8080/rapidoc)
+
+### OpenAPI Specification
+
+The machine-readable OpenAPI 3.0 specification is available at:
+- [http://localhost:8080/api-docs/openapi.json](http://localhost:8080/api-docs/openapi.json)
+
+This spec can be used with:
+- API testing tools (Postman, Insomnia)
+- Code generation tools (OpenAPI Generator, Swagger Codegen)
+- API validation tools
+- Custom documentation generators
+
+### Available Endpoints
+
+#### Health Check
+- `GET /health` - Service health check endpoint
+
+#### Keys - Read Operations
+- `GET /keys` - List all keys in the store
+- `GET /keys/{key}` - Get value by key
+
+#### Keys - Write Operations
+- `POST /keys` - Create new key-value pair (returns 409 if key exists)
+- `PUT /keys/{key}` - Update or create key-value pair (upsert)
+- `DELETE /keys/{key}` - Delete key-value pair
+
+### Quick Examples
+
+Create a new key-value pair:
+```bash
+curl -X POST http://localhost:8080/keys \
+  -H "Content-Type: application/json" \
+  -d '{"key": "user-123", "value": "John Doe"}'
+```
+
+Retrieve a value:
+```bash
+curl http://localhost:8080/keys/user-123
+```
+
+Update a value:
+```bash
+curl -X PUT http://localhost:8080/keys/user-123 \
+  -H "Content-Type: application/json" \
+  -d '{"value": "Jane Doe"}'
+```
+
+Delete a key:
+```bash
+curl -X DELETE http://localhost:8080/keys/user-123
+```
+
+List all keys:
+```bash
+curl http://localhost:8080/keys
+```
+
+For detailed request/response schemas, error codes, and interactive testing, visit the [Swagger UI](http://localhost:8080/swagger-ui) when the server is running.
+
 ## Contributing
 
 All contributions should follow the documented workflow:
