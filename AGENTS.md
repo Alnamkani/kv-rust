@@ -54,12 +54,16 @@ Good: Clear, self-documenting names and structure
 
 ### Before Starting Implementation
 
-1. **Check documentation**:
+1. **Sync with remote**: Always start by running `gt sync` to pull trunk, clean up merged branches, and restack
+   - **NEVER use `git pull`** - always use `gt sync` instead
+   - This ensures your local repository is up to date with the remote
+
+2. **Check documentation**:
    - Is there a PRD for this feature? (`docs/prds/`)
    - Are there related ADRs? (`docs/adrs/`)
    - If not, use the **prd-writer** and **adr-writer** skills to create them
 
-2. **Understand the stack**:
+3. **Understand the stack**:
    - What features does this depend on?
    - What features might depend on this?
    - Should this be part of a stacked PR?
@@ -128,13 +132,34 @@ Good: Clear, self-documenting names and structure
    ```
 
 2. **Creating stacks**:
-   - Use `gt branch create` for each logical step
+   - Create a new branch with changes: `gt create -am "commit message"` (or `gt c -am "message"`)
+   - This stages all changes and creates a commit in one command
    - Each branch should build on the previous when there's a dependency
-   - Submit with `gt stack submit`
+   - View your stack: `gt log` or `gt ls` (short form)
 
-3. **Updating stacks**:
-   - When making changes to a lower branch, use `gt stack submit` to update all dependent PRs
-   - Graphite handles rebasing automatically
+3. **Submitting stacks**:
+   - Submit current branch and ancestors: `gt submit`
+   - Submit entire stack (current + descendants): `gt submit --stack` (or `gt ss`)
+   - Publish PRs immediately: `gt submit --stack --publish` (or `gt ss -p`)
+   - Always use `--publish` to make PRs public when submitting
+
+4. **Updating stacks**:
+   - Modify current branch: `gt modify` (or `gt m`)
+   - Stage all and amend: `gt modify -a` (or `gt m -a`)
+   - After changes, resubmit: `gt submit --stack --publish`
+   - Sync with remote: `gt sync` (pulls trunk, cleans merged branches, restacks)
+
+5. **Common Graphite Commands**:
+   ```bash
+   gt create -am "message"     # Create branch with commit (short: gt c -am)
+   gt modify -a                # Amend changes to current branch (short: gt m -a)
+   gt submit --stack --publish # Submit and publish stack (short: gt ss -p)
+   gt sync                     # Sync with remote and clean up
+   gt log                      # View your stacks (short: gt ls)
+   gt up / gt down             # Navigate between branches (short: gt u / gt d)
+   gt checkout <branch>        # Switch branches (short: gt co)
+   gt move --onto <branch>     # Move current branch to new parent
+   ```
 
 ## Decision Documentation
 
@@ -187,12 +212,12 @@ When reviewing code:
 User: "Add a persistence layer to the KV store"
 
 Agent: 
-1. Load prd-writer skill to create PRD-002-persistence.md
-2. Load adr-writer skill to create ADR-001-storage-backend-choice.md
-3. Start Graphite branch: gt branch create "feat/kv-persistence"
+1. Sync with remote: gt sync
+2. Load prd-writer skill to create PRD-002-persistence.md
+3. Load adr-writer skill to create ADR-001-storage-backend-choice.md
 4. Implement persistence layer with tests
-5. Commit: "feat: add persistence layer (PRD-002, ADR-001)"
-6. Submit PR: gt stack submit
+5. Create Graphite branch with changes: gt create -am "feat: add persistence layer (PRD-002, ADR-001)"
+6. Submit and publish PR: gt submit --stack --publish (or gt ss -p)
 7. Update docs/adrs/notes/ with implementation insights
 ```
 
