@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+use utoipa::ToSchema;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(try_from = "String", into = "String")]
+#[schema(example = "user-123", pattern = "^[a-zA-Z0-9_-]{1,255}$")]
 pub struct Key(String);
 
 #[derive(Debug)]
