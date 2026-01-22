@@ -1,5 +1,13 @@
 use actix_web::{HttpResponse, Responder, get};
 
+#[utoipa::path(
+    get,
+    path = "/health",
+    responses(
+        (status = 200, description = "Service is healthy", body = String)
+    ),
+    tag = "Health"
+)]
 #[get("/health")]
 pub async fn health() -> impl Responder {
     HttpResponse::Ok().body("OK")
