@@ -34,13 +34,10 @@ async fn main() -> std::io::Result<()> {
             )
             .service(
                 SwaggerUi::new("/swagger-ui/{_:.*}")
-                    .url("/api-docs/openapi.json", ApiDoc::openapi())
+                    .url("/api-docs/openapi.json", ApiDoc::openapi()),
             )
             .service(Redoc::with_url("/redoc", ApiDoc::openapi()))
-            .service(
-                RapiDoc::new("/api-docs/openapi.json")
-                    .path("/rapidoc")
-            )
+            .service(RapiDoc::new("/api-docs/openapi.json").path("/rapidoc"))
             .service(Scalar::with_url("/scalar", ApiDoc::openapi()))
             .service(app::health::health)
             .configure(app::read_ops::configure)

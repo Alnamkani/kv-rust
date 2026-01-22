@@ -1,4 +1,6 @@
-use crate::app::models::{CreateKVRequest, ErrorDetail, ErrorResponse, KeyValueResponse, UpdateKVRequest, ValueResponse};
+use crate::app::models::{
+    CreateKVRequest, ErrorDetail, ErrorResponse, KeyValueResponse, UpdateKVRequest, ValueResponse,
+};
 use crate::service::Storage;
 use crate::types::Key;
 use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
