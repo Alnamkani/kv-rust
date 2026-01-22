@@ -219,11 +219,11 @@ mod tests {
             Key::new("emoji😀".to_string()),
             Err(KeyError::InvalidCharacters)
         ));
-        
+
         // These actually pass validation because is_alphanumeric() accepts them:
         // assert!(Key::new("японский".to_string()).is_ok());  // Cyrillic
         // assert!(Key::new("中文".to_string()).is_ok());        // Chinese
-        
+
         // If you want to restrict to ASCII only, you'd need to change
         // the validation in Key::new() to use c.is_ascii_alphanumeric()
     }
@@ -314,11 +314,11 @@ mod tests {
     #[test]
     fn test_serialize_deserialize() {
         let key = Key::new("test-key".to_string()).unwrap();
-        
+
         // Serialize to JSON
         let json = serde_json::to_string(&key).unwrap();
         assert_eq!(json, "\"test-key\"");
-        
+
         // Deserialize from JSON
         let deserialized: Key = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized, key);
@@ -338,10 +338,7 @@ mod tests {
 
     #[test]
     fn test_error_messages() {
-        assert_eq!(
-            KeyError::Empty.to_string(),
-            "Key cannot be empty"
-        );
+        assert_eq!(KeyError::Empty.to_string(), "Key cannot be empty");
         assert_eq!(
             KeyError::TooLong.to_string(),
             "Key exceeds maximum length of 255 characters"
@@ -400,7 +397,7 @@ mod tests {
         let key1 = Key::new("test".to_string()).unwrap();
         let key2 = Key::new("test".to_string()).unwrap();
         let key3 = Key::new("other".to_string()).unwrap();
-        
+
         assert_eq!(key1, key2);
         assert_ne!(key1, key3);
     }
